@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+            http://www.springframework.org/schema/security
+            http://www.springframework.org/schema/security/spring-security-3.2.xsd">
+
+    <http auto-config="false" use-expressions="true" disable-url-rewriting="true">
+
+<!--
+        <intercept-url pattern="/quan-tri/*" access="hasAnyRole('ADMIN')" />
+-->
+        <intercept-url pattern="/quan-tri/**" access="hasAnyRole('ADMIN')"/>
+    <!--    <intercept-url pattern="/api/**" access="hasAnyRole('ADMIN')"/>-->
+        <access-denied-handler error-page="/accessDenied" />
+        <form-login  login-page="/dang-nhap"
+                     username-parameter="j_username"
+                     password-parameter="j_password"
+                     login-processing-url="/j_spring_security_check"
+                     authentication-success-handler-ref="customSuccessHandler"
+                     authentication-failure-url="/dang-nhap?incorrectAccount"/>
+        <!--
+                     xác thực xong chuyển xuống cái customSuccessHandler"chưa phan quyền nha"
+-->
+        <session-management invalid-session-url="/dang-nhap?sessionTimeout"/>
+        <logout delete-cookies="JSESSIONID"/>
+    </http>
+    <!--dang-nhap trong Homecontroller--><!-- name trong login.jsp--><!--password trong login.jsp--><!-- tức action trong login.jsp-->
+  <!-- dẫn khi thành công sẽ nhảy vào security CustomSucessHandler nhưng để xử lí thì cần thêm bước khai báo     <beans:bean id="customUserDetailsService" class="com.laptrinhjavaweb.service.impl.CustomUserDetailsService" />
+ ở dưới-->
+    <!-- đường dẫn khi fail--><!-- khi đăng nhập k dùng trong bn phút-->
+
+    <authentication-manager >
+        <authentication-provider user-service-ref="customUserDetailsService">
+            <password-encoder ref="bcryptEncoder"/>
+        </authentication-provider>
+    </authentication-manager>
+   <!-- khi chúng ta nhập username password xong nó sẽ vào đây xử lý/BCryptPasswordEncoder có thằng org.springframework.security.crypto.bcrypt
+    có id=bcryptEncoder dòng 29 <password-encoder ref="bcryptEncoder"/> sẽ refence lại/ tức khi nhập vào password thằng spring nó xử lí ngầm cho rồi
+sau đó vào CustomUserDetailsService load username
+    thêm class vào để chạy-->
+    <beans:bean id="bcryptEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
+    <beans:bean id="customUserDetailsService" class="com.laptrinhjavaweb.service.impl.CustomUserDetailsService" />
+    <beans:bean id="customSuccessHandler" class="com.laptrinhjavaweb.security.CustomSuccessHandler" />
+
+</beans:beans>
